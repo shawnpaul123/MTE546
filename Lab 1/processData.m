@@ -40,9 +40,9 @@ for i = 1:Ndist
         % Get mean acceleration in the corresponding axis
         timeSel = t(select);
         accelData = M(:, j+1);
-        accelMean = mean(accelData(select));
+        accelData = accelData(select);
         
-        
+        accelMean = mean(accelData);
         
         if plotHist || plotNoise
             % Generate histogram of acceleration in that axis
@@ -50,9 +50,9 @@ for i = 1:Ndist
             hold on;
             
             if plotHist
-                histfit(accelData(select));
-                pd = fitdist(accelData(select), 'Normal');
-                [h, p, stats] = chi2gof(accelData(select));
+                histfit(accelData);
+                pd = fitdist(accelData, 'Normal');
+                [h, p, stats] = chi2gof(accelData);
                 disp(pd);
                 title(['Acceleration histogram for ', dropDir(j), ...
                     '-axis, height of ', num2str(dropDist(i)), ' cm']);
@@ -63,17 +63,30 @@ for i = 1:Ndist
                 xlabel('Acceleration [m/s^2]');
                 ylabel('Number of samples');
             elseif plotNoise
-                noise = (accelData(select) - accelMean)/accelMean;
-                plot(timeSel, noise);
+                noise = (accelData - accelMean)/accelMean;
+                plot(timeSel - timeSel(1), noise);
+                plot(timeSel(1:2:end) - timeSel(1), noise(1:2:end));
+                plot(timeSel(1:10:end) - timeSel(1), noise(1:10:end));
                 title(['Acceleration noise for ', dropDir(j), ...
                     '-axis, height of ', num2str(dropDist(i)), ' cm']);
                 xlabel('Time [s]');
                 ylabel('Normalized noise');
+                legend('Original', '1/2 sampling rate', '1/10 sampling rate');
                 grid on;
                 grid minor;
                 
                 % Invert y-axis
                 set(gca, 'YDir', 'reverse');
+                
+                % Output means
+                disp([dropDir(j), '-axis, ', num2str(dropDist(i)), ' cm']);
+                disp(['Mean accel: ', num2str(mean(accelData))]);
+                disp(['RMS noise: ', num2str(rms(noise))]);
+                disp(['Mean accel (0.5x rate): ', num2str(mean(accelData(1:2:end)))]);
+                disp(['RMS noise (0.5x rate): ', num2str(rms(noise(1:2:end)))]);
+                disp(['Mean accel (0.1x rate): ', num2str(mean(accelData(1:10:end)))]);
+                disp(['RMS noise (0.1x rate): ', num2str(rms(noise(1:10:end)))]);
+                disp(' ');
             end
         end
         
