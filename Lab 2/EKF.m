@@ -4,6 +4,13 @@ close all; clear all;
 filename = 'Data/slide +x.csv';
 data = readmatrix(filename);
 
+% Crop out beginning
+idx = data(:, 1) > 2.5;
+data = data(idx, :);
+
+% Convert to cm/s^2
+data(:, 2:end) = 100*data(:, 2:end);
+
 t = data(:, 1);
 ax = data(:, 2);
 ay = data(:, 3);
@@ -18,9 +25,9 @@ A = @(T) [1 0 T 0; ...
           0 0 1 0; ...
           0 0 0 1];
 
-Q = 0.1*eye(4);
-R = [0.21337    0; ...
-     0          0.022288];
+Q = 1*eye(4);
+R = [0.21337 0; 0 0.022288];
+% R = 1*eye(2);
 
 % Initial conditions
 X0 = [0 0 1 0]';
@@ -46,7 +53,7 @@ for i = 1:N-1
     % Correct w/ sensor data
     Yk = [ax(i); ay(i)];
     
-    K = Pk*Hk'*inv(Hk*Pk*Hk' + R);
+    K = (Pk*Hk')*inv(Hk*Pk*Hk' + R);
     Xhatk1 = Xhatk1 + K*(Yk - Yhatk1);
     Pk = (eye(4) - K*Hk)*Pk;
     
@@ -54,16 +61,42 @@ for i = 1:N-1
     X(:, i+1) = Xhatk1;
 end
 
+x = X(1, :);
+y = X(2, :);
+u = X(3, :);
+v = X(4, :);
+
+%% Numerical integration
+uint = cumtrapz(t, ax);
+vint = cumtrapz(t, ay);
+xint = cumtrapz(t, uint);
+yint = cumtrapz(t, vint);
+
 %% Plot results
+% EKF
 figure(1);
-title('State vector progression');
-plot(t, X(1, :), t, X(2, :));
+plot(t, x, t, y);
 ylabel('Position [cm]');
 yyaxis right;
-plot(t, X(3, :), t, X(4, :), 'g-');
+plot(t, u, t, v, 'g-');
 ylabel('Velocity [cm/s]');
 xlabel('Time [s]');
 legend('x', 'y', 'u', 'v');
+title('EKF state vector progression');
+
+grid on;
+grid minor;
+
+% Numerical integration
+figure(2);
+plot(t, xint, t, yint);
+ylabel('Position [cm]');
+yyaxis right;
+plot(t, uint, t, vint, 'g-');
+ylabel('Velocity [cm/s]');
+xlabel('Time [s]');
+legend('x', 'y', 'u', 'v');
+title('Prediction by sensor data integration');
 
 grid on;
 grid minor;
