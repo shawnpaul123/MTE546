@@ -1,8 +1,9 @@
 slide +x.csv: Sliding phone in +x direction by 19.2 cm
-slide random.csv: Random ass motion
+slide random.csv: Random motion
 slide sawtooth.csv: Sliding phone in sawtooth wave w/ amplitude 4.5 cm. Net +x movement 26.5 cm
 slide shaky.csv: Sliding phone in +x direction by 19.2 cm with shaky hands
 slide spin.csv: Phone starts off moving in +x direction. However, string is attached to bottom, so it turns as it slides until it is being dragged in the -y direction. 
 slide -y.csv: Sliding phone in -y direction by 11.3 cm.
 stationary.csv: Not moving phone at all.
+
 simulated_data.csv: data generated from simulation script
