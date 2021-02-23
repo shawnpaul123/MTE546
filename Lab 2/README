@@ -1,0 +1,4 @@
+Data: stores all files for postprocessing
+EKF.m: EKF to deal with sensor data
+EKF_SimulatedData.m: to deal with simulated sensor data
+Simulatedmodel.m: generate simulated data for ekf
