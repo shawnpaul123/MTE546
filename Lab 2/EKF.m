@@ -14,7 +14,8 @@ data(:, 2:end) = 100*data(:, 2:end);
 t = data(:, 1);
 ax = data(:, 2);
 ay = data(:, 3);
-az = data(:, 4);
+%not needed below as z direction doesn't count
+%az = data(:, 4);
 
 N = length(t);
 
