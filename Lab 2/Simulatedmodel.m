@@ -49,3 +49,8 @@ for k=1:10/dt
 end
 
 
+csv_export = [t;y1]';
+writematrix(csv_export,'data/simulated_data.csv')
+
+
+
