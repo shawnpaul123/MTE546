@@ -1,6 +1,7 @@
 clc;
 clear all;
 % Code written by Christian Mele, TA for MTE 546 as aid to generate line
+%edited by SP for better specification for the lab
 dt = 0.1;
 t=0:dt:10;
 
