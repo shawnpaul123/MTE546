@@ -8,14 +8,6 @@ filename = 'Data/simulated_data.csv';
 %need to have data in format of time,ax,ay
 data = readmatrix(filename);
 
-% Crop out beginning
-idx = data(:, 1) > 2.5;
-data = data(idx, :);
-
-
-% Convert to cm/s^2
-data(:, 2:end) = 100*data(:, 2:end);
-
 t = data(:, 1);
 ax = data(:, 2);
 ay = data(:, 3);
@@ -110,13 +102,13 @@ grid minor;
 function Y = h(X)
     x = X(1);
     y = X(2);
-    Y = 100*[(8.3741*x + 0.2395)./(x + 0.0123); ...
-             (8.3558*y + 1.3344)./(y + 0.1294)];
+    Y = [(8.3741*x + 0.2395)./(x + 0.0123); ...
+         (8.3558*y + 1.3344)./(y + 0.1294)];
 end
 
 function J = H(X)
     x = X(1);
     y = X(2);
-    J = 100*[8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
-             0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
+    J = [8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
+         0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
 end
