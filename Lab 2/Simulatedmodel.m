@@ -48,9 +48,11 @@ for k=1:10/dt
     
 end
 
-
+% Write simulated acceleration data
 csv_export = [t;y1]';
-writematrix(csv_export,'data/simulated_data.csv')
+writematrix(csv_export,'data/simulated_data.csv'); 
 
-
+% Write ground truth data
+csv_export = [t;x1]';
+writematrix(csv_export,'data/groundtruth_data.csv');
 

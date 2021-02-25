@@ -12,19 +12,28 @@ t = data(:, 1);
 ax = data(:, 2);
 ay = data(:, 3);
 
+% Read in ground truth data
+truefile = 'Data/groundtruth_data.csv';
+data = readmatrix(truefile);
+
+xtrue = data(:, 2);
+ytrue = data(:, 3);
+utrue = data(:, 4);
+vtrue = data(:, 5);
 
 N = length(t);
 
 %% Setup
+plotK = false;
+
 % Define models
 A = @(T) [1 0 T 0; ...
           0 1 0 T; ...
           0 0 1 0; ...
           0 0 0 1];
 
-Q = 1*eye(4);
+Q = 0.025*eye(4);
 R = [0.21337 0; 0 0.022288];
-% R = 1*eye(2);
 
 % Initial conditions
 X0 = [0 0 1 0]';
@@ -33,6 +42,7 @@ Pk = eye(4);
 % Set up variables
 X = zeros(4, N);
 X(:, 1) = X0;
+Khist = zeros([N 8]);
 
 %% EKF
 for i = 1:N-1
@@ -56,6 +66,7 @@ for i = 1:N-1
     
     % Save corrected state prediction
     X(:, i+1) = Xhatk1;
+    Khist(i, :) = reshape(K, 1, []);
 end
 
 x = X(1, :);
@@ -72,31 +83,65 @@ yint = cumtrapz(t, vint);
 %% Plot results
 % EKF
 figure(1);
-plot(t, x, t, y);
-ylabel('Position [cm]');
-yyaxis right;
-plot(t, u, t, v, 'g-');
-ylabel('Velocity [cm/s]');
-xlabel('Time [s]');
-legend('x', 'y', 'u', 'v');
-title('EKF state vector progression');
+sgtitle('EKF comparison with ground truth');
 
+subplot(2,2,1);
+plot(t, x, t, xtrue, '--');
+title('x');
+xlabel('Time [s]');
+ylabel('x-position [cm]');
+legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
 
-% Numerical integration
-figure(2);
-plot(t, xint, t, yint);
-ylabel('Position [cm]');
-yyaxis right;
-plot(t, uint, t, vint, 'g-');
-ylabel('Velocity [cm/s]');
+subplot(2,2,2);
+plot(t, y, t, ytrue, '--');
+title('y');
 xlabel('Time [s]');
-legend('x', 'y', 'u', 'v');
-title('Prediction by sensor data integration');
-
+ylabel('y-position [cm]');
+legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
+
+subplot(2,2,3);
+plot(t, u, t, utrue, '--');
+title('u');
+xlabel('Time [s]');
+ylabel('x-velocity [cm]');
+legend('EKF prediction', 'Ground truth');
+grid on;
+grid minor;
+
+subplot(2,2,4);
+plot(t, v, t, vtrue, '--');
+title('v');
+xlabel('Time [s]');
+ylabel('y-velocity [cm]');
+legend('EKF prediction', 'Ground truth');
+grid on;
+grid minor;
+
+% Kalman gains
+if plotK
+    figure(2);
+    plot(t, Khist);
+    title('Kalman gains');
+    xlabel('Time [s]');
+    ylabel('Gain');
+    legend('11', '21', '31', '41', '12', '22', '32', '42');
+    grid on;
+    grid minor;
+end
+
+%% Diagnostics
+ex = rms(x' - xtrue);
+ey = rms(y' - ytrue);
+eu = rms(u' - utrue);
+ev = rms(v' - vtrue);
+em = mean([ex ey eu ev]);
+disp(['Err: ' num2str(ex) ' ' num2str(ey) ' ' ...
+    num2str(eu) ' ' num2str(ev) ...
+    ' M = ' num2str(em)]);
 
 %% Define functions
 function Y = h(X)

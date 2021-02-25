@@ -1,0 +1,139 @@
+close all; clear all;
+%reused EKF code 
+%to accompany for simulated data
+
+
+%% Read in data
+filename = 'Data/simulated_data.csv';
+%need to have data in format of time,ax,ay
+data = readmatrix(filename);
+
+% Read in ground truth data
+truefile = 'Data/groundtruth_data.csv';
+data = readmatrix(truefile);
+
+t = data(:, 1);
+ax = data(:, 2);
+ay = data(:, 3);
+
+xtrue = data(:, 2);
+ytrue = data(:, 3);
+utrue = data(:, 4);
+vtrue = data(:, 5);
+
+N = length(t);
+
+%% Setup
+% Define models
+A = @(T) [1 0 T 0; ...
+          0 1 0 T; ...
+          0 0 1 0; ...
+          0 0 0 1];
+
+Q = 1*eye(4);
+R = [0.21337 0; 0 0.022288];
+% R = 1*eye(2);
+
+% Initial conditions
+X0 = [0 0 1 0]';
+Pk = eye(4);
+
+% Set up variables
+X = zeros(4, N);
+X(:, 1) = X0;
+Khist = zeros([N 8]);
+
+%% EKF
+figure(2);
+for i = 1:N-1
+    T = t(i+1) - t(i);
+    Xk = X(:, i);
+    Ak = A(T);
+    
+    % Predict
+    Xhatk1 = Ak*Xk;
+    Yhatk1 = h(Xk);
+    
+    Pk = Ak*Pk*Ak' + Q;
+    Hk = H(Xk);
+    
+    % Correct w/ sensor data
+    Yk = [ax(i); ay(i)];
+    
+    K = (Pk*Hk')*inv(Hk*Pk*Hk' + R);
+    Xhatk1 = Xhatk1 + K*(Yk - Yhatk1);
+    Pk = (eye(4) - K*Hk)*Pk;
+    
+    % Save corrected state prediction
+    X(:, i+1) = Xhatk1;
+    Khist(:, :, i) = K;
+end
+
+x = X(1, :);
+y = X(2, :);
+u = X(3, :);
+v = X(4, :);
+
+%% Numerical integration
+uint = cumtrapz(t, ax);
+vint = cumtrapz(t, ay);
+xint = cumtrapz(t, uint);
+yint = cumtrapz(t, vint);
+
+%% Plot results
+% EKF
+figure(1);
+sgtitle('EKF comparison with ground truth');
+
+subplot(2,2,1);
+plot(t, x, t, xtrue, '--');
+title('x');
+xlabel('Time [s]');
+ylabel('x-position [cm]');
+legend('EKF prediction', 'Ground truth', 'Location', 'northwest');
+grid on;
+grid minor;
+
+subplot(2,2,2);
+plot(t, y, t, ytrue, '--');
+title('y');
+xlabel('Time [s]');
+ylabel('y-position [cm]');
+legend('EKF prediction', 'Ground truth', 'Location', 'northwest');
+grid on;
+grid minor;
+
+subplot(2,2,3);
+plot(t, u, t, utrue, '--');
+title('u');
+xlabel('Time [s]');
+ylabel('x-velocity [cm]');
+legend('EKF prediction', 'Ground truth', 'Location', 'northwest');
+grid on;
+grid minor;
+
+subplot(2,2,4);
+plot(t, v, t, vtrue, '--');
+title('v');
+xlabel('Time [s]');
+ylabel('y-velocity [cm]');
+legend('EKF prediction', 'Ground truth', 'Location', 'northwest');
+grid on;
+grid minor;
+
+
+
+%% Define functions
+function Y = h(X)
+    x = X(1);
+    y = X(2);
+    Y = [(8.3741*x + 0.2395)./(x + 0.0123); ...
+         (8.3558*y + 1.3344)./(y + 0.1294)];
+end
+
+function J = H(X)
+    x = X(1);
+    y = X(2);
+    J = [8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
+         0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
+end
