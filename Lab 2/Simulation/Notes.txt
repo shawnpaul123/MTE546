@@ -1,0 +1,12 @@
+*-groundtruth.csv: Contains simulated state information (no sensor noise, only system noise)
+	Columns (left to right): Time [s], x [cm], y [cm], u [cm/s], v [cm/s]
+
+*-sensordata.csv: Contains a simulation of what the sensors would read
+	Columns (left to right): Time [s], ax [cm/s^2], ay [cm/s^2]
+
+Case name meanings:
+	baseline: u = 1 cm/s, standard sensor and system noise
+	10xSensNoise: baseline, but with 10x the sensor noise
+	10xSystNoise: basline, but with 10x the system noise
+	yMotion: baseline, but with u = 0 cm/s and v = 1 cm/s
+	stationary: baseline, but with u = 0 cm/s
