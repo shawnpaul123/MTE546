@@ -8,21 +8,29 @@ scenario = input('which scenario do you want to test for?');
 % 1- different initial state
 % 2 - different sensor noise
 % 3 - different system noise
-% 4 - different motion model
+% 4 - different motion model(y-dir)
 % 5 - stationary motion model
 
 
 %% Read in data
-if scenario == 0 || scenario  == 1
-    filename = 'data/simulated_data.csv'; 
-    truefile = 'data/groundtruth_data.csv';
+if scenario == 0 
+    filename = 'Simulation/baseline-sensordata.csv'; 
+    truefile = 'Simulation/baseline-groundtruth.csv';
+elseif scenario == 1
+    filename = 'Simulation/baseline-sensordata.csv'; 
+    truefile = 'Simulation/baseline-groundtruth.csv';
+elseif scenario == 2
+    filename = 'Simulation/10xSensNoise-sensordata.csv'; 
+    truefile = 'Simulation/10xSensNoise-groundtruth.csv';
+elseif scenario == 3
+    filename = 'Simulation/10xSystNoise-sensordata.csv'; 
+    truefile = 'Simulation/10xSystNoise-groundtruth.csv';
+elseif scenario == 4
+    filename = 'Simulation/yMotion-sensordata.csv'; 
+    truefile = 'Simulation/yMotion-groundtruth.csv';
 else
-    str = num2str(scenario);
-    fn = append(str,'_simulated_data.csv');
-    filename = append('data/',fn);
-    tn = append(str,'_groundtruth.csv');
-    truefile = append('data/',tn);
-    
+    filename = 'Simulation/stationary-sensordata.csv'; 
+    truefile = 'Simulation/stationary-groundtruth.csv';
 end
     
 
@@ -68,11 +76,11 @@ R = [0.21337 0; 0 0.022288];%initializing sensor values
 
 % Initial conditions
 if scenario == 1
-    X0 = [10 10 10 10]'; %initializing the positions
+    X0 = [1 1 0 0]'; %initializing the positions
     
     
 else
-     X0 = [0 0 1 0]'; %initializing the positions
+     X0 = [0 0 0 0]'; %initializing the positions
      
 end
     
