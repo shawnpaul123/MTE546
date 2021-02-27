@@ -4,9 +4,9 @@ close all; clear all;
 filename = 'Data/slide +x.csv';
 data = readmatrix(filename);
 
-% Crop out beginning
-idx = data(:, 1) > 2.5;
-data = data(idx, :);
+% % Crop out beginning
+% idx = (data(:, 1) > 2.5) & (data(:, 1) < 6.5);
+% data = data(idx, :);
 
 % Convert to cm/s^2
 data(:, 2:end) = 100*data(:, 2:end);
@@ -26,12 +26,11 @@ A = @(T) [1 0 T 0; ...
           0 0 1 0; ...
           0 0 0 1];
 
-Q = 1*eye(4);
+Q = 0.025*eye(4);
 R = [0.21337 0; 0 0.022288];
-% R = 1*eye(2);
 
 % Initial conditions
-X0 = [0 0 1 0]';
+X0 = [0 0 0 0]';
 Pk = eye(4);
 
 % Set up variables
@@ -102,17 +101,28 @@ title('Prediction by sensor data integration');
 grid on;
 grid minor;
 
+% Data
+figure(3);
+plot(t, ax, t, ay);
+ylabel('Acceleration [cm/s^2]');
+xlabel('Time [s]');
+legend('ax', 'ay')
+title('Accelerometer data');
+
+grid on;
+grid minor;
+
 %% Define functions
 function Y = h(X)
     x = X(1);
     y = X(2);
-    Y = 100*[(8.3741*x + 0.2395)./(x + 0.0123); ...
-             (8.3558*y + 1.3344)./(y + 0.1294)];
+    Y = [(8.3741*x + 0.2395)./(x + 0.0123); ...
+         (8.3558*y + 1.3344)./(y + 0.1294)];
 end
 
 function J = H(X)
     x = X(1);
     y = X(2);
-    J = 100*[8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
-             0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
+    J = [8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
+         0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
 end
