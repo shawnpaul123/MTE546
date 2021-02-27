@@ -13,7 +13,7 @@ close all; clear all;
 %   stationary: baseline, but with u = 0 cm/s
 
 %% Set up
-dt = 0.1;
+dt = 0.005;
 t = 0:dt:10;
 N = length(t);
 
@@ -21,8 +21,8 @@ N = length(t);
 X = zeros(4, N);
 
 % Velocity noise covariance
-stateNoise = 0.1*eye(2);
-% stateNoise = 10*0.1*eye(2);
+stateNoise = 1e-4*eye(4);
+% stateNoise = 10*1e-4*eye(4);
 
 % Sensor noise covariance
 senseNoise = [0.21337 0; ...
@@ -36,35 +36,48 @@ h = @(x, y) [(8.3741*x + 0.2395)./(x + 0.0123); ...
 
 %% Simulate motion
 % Set velocity profile
-u = 1*ones(1, N);
-v = 0*ones(1, N);
-% u = 0*ones(1, N);
-% v = 1*ones(1, N);
-% u = 0*ones(1, N);
-% v = 0*ones(1, N);
+X0 = [0 0 1 0]';
+% X0 = [0 0 0 1]';
+% X0 = [0 0 0 0]';
 
 % Calculate noise
-randn('seed', 0);       % I don't think this line is necessary?
-w  = mvnrnd([0 0], stateNoise, N)';
+randn('seed', 0);
+w  = mvnrnd([0 0 0 0], stateNoise, N)';
 v1 = mvnrnd([0 0], senseNoise, N)';
 
-% Add noise to states
-u = u + w(1, :);
-v = v + w(2, :);
+% Begin loop
+X = zeros(4, N);
+Y = zeros(2, N);
+X(:, 1) = X0;
+for i = 1:N - 1
+    Xk = X(:, i);
+    wk = w(:, i);
+    v1k = v1(:, i);
+    
+    % Calculate sensor response
+    Yk = h(Xk(1), Xk(2)) + v1k;
+    
+    % Propagate state
+    Xk1 = [Xk(1) + dt*Xk(3); ...
+           Xk(2) + dt*Xk(4); ...
+           Xk(3); ...
+           Xk(4)] + wk;
+    
+    % Calculate sensor response
+    Yk1 = h(Xk1(1), Xk1(2)) + v1k;
+    
+    % Save state
+    X(:, i+1) = Xk1;
+    Y(:, i+1) = Yk1;
+end
+Y(:, end) = h(X(1, end), X(2, end)) + v1(:, end);
 
-% Calculate displacement
-x = cumtrapz(t, u);
-y = cumtrapz(t, v);
-% Shawn, stop giggling
-
-% Feed position to sensor to calculate accelerations
-Y = h(x, y);
+x = X(1, :);
+y = X(2, :);
+u = X(3, :);
+v = X(4, :);
 axSense = Y(1, :);
 aySense = Y(2, :);
-
-% Add noise to sensor readings
-axSense = axSense + v1(1, :);
-aySense = aySense + v1(2, :);
 
 %% Plot simulated data
 figure(1);

@@ -2,15 +2,14 @@ close all; clear all;
 %reused EKF code 
 %to accompany for simulated data
 %choose scenario
-scenario = input('which scenario do you want to test for?');
+scenario = input('which scenario do you want to test for? ');
 %scenario is 0,1,2,3,4, or 5
 % 0 - no changes
-% 1- different initial state
+% 1 - different initial state
 % 2 - different sensor noise
 % 3 - different system noise
 % 4 - different motion model(y-dir)
 % 5 - stationary motion model
-
 
 %% Read in data
 if scenario == 0 
@@ -33,17 +32,14 @@ else
     truefile = 'Simulation/stationary-groundtruth.csv';
 end
     
-
 %need to have data in format of time,ax,ay
 data = readmatrix(filename);
-
 
 t = data(:, 1);
 ax = data(:, 2);
 ay = data(:, 3);
 
 % Read in ground truth data
-
 data = readmatrix(truefile);
 
 xtrue = data(:, 2);
@@ -55,10 +51,7 @@ N = length(t);
 
 %% Setup
 plotK = false;
-
-
-
-
+plotP = true;
 
 % Define models
 A = @(T) [1 0 T 0; ...
@@ -66,22 +59,14 @@ A = @(T) [1 0 T 0; ...
           0 0 1 0; ...
           0 0 0 1];
 
-
-
-
-Q = 0.025*eye(4);
+Q = 1e-4*eye(4);
 R = [0.21337 0; 0 0.022288];%initializing sensor values
      
-
-
 % Initial conditions
 if scenario == 1
-    X0 = [1 1 0 0]'; %initializing the positions
-    
-    
+    X0 = [1 1 1 0]'; %initializing the positions
 else
-     X0 = [0 0 0 0]'; %initializing the positions
-     
+    X0 = [0 0 1 0]'; %initializing the positions  
 end
     
 Pk = eye(4);
@@ -90,6 +75,7 @@ Pk = eye(4);
 X = zeros(4, N);
 X(:, 1) = X0;
 Khist = zeros([N 8]);
+Phist = zeros([N 16]);
 
 %% EKF
 for i = 1:N-1
@@ -114,6 +100,7 @@ for i = 1:N-1
     % Save corrected state prediction
     X(:, i+1) = Xhatk1;
     Khist(i, :) = reshape(K, 1, []);
+    Phist(i, :) = reshape(Pk, 1, []);
 end
 
 x = X(1, :);
@@ -180,6 +167,25 @@ if plotK
     grid minor;
 end
 
+% State uncertainty
+if plotP
+    % UT means upper-triangular: Only plot the history of the upper-
+    % triangular elements of P
+    labels = [11 12 13 14; 21 22 23 24; 31 32 33 34; 41 42 43 44];
+    maskUT = logical([1  1  1  1 ; 0  1  1  1 ; 0  0  1  1 ; 0  0  0  1 ]);
+    PhistUT = Phist(:, maskUT);
+    labelsUT = labels(maskUT);
+    
+    figure(3);
+    plot(t, Phist);
+    title('State uncertainty (P matrix)');
+    xlabel('Time [s]');
+    ylabel('Covariance');
+    legend(num2str(labelsUT));
+    grid on;
+    grid minor;
+end
+
 %% Diagnostics
 ex = rms(x' - xtrue);
 ey = rms(y' - ytrue);
@@ -196,7 +202,6 @@ function Y = h(X)
     y = X(2);
     Y = [(8.3741*x + 0.2395)./(x + 0.0123); ...
          (8.3558*y + 1.3344)./(y + 0.1294)];
-
 end
 
 function J = H(X)
@@ -204,5 +209,4 @@ function J = H(X)
     y = X(2);
     J = [8.3741./(x + 0.0123) - (8.3741*x + 0.2395)./(x + 0.0123).^2, 0, 0, 0;
          0, 8.3558./(y + 0.1294) - (8.3558*y + 1.3344)./(y + 0.1294).^2, 0, 0];
-      
 end
