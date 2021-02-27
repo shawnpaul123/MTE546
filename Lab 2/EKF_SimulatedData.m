@@ -119,7 +119,7 @@ yint = cumtrapz(t, vint);
 figure(1);
 sgtitle('EKF comparison with ground truth');
 
-subplot(2,2,1);
+subplot(2, 2, 1);
 plot(t, x, t, xtrue, '--');
 title('x');
 xlabel('Time [s]');
@@ -128,7 +128,7 @@ legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
 
-subplot(2,2,2);
+subplot(2, 2, 2);
 plot(t, y, t, ytrue, '--');
 title('y');
 xlabel('Time [s]');
@@ -137,7 +137,7 @@ legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
 
-subplot(2,2,3);
+subplot(2, 2, 3);
 plot(t, u, t, utrue, '--');
 title('u');
 xlabel('Time [s]');
@@ -146,7 +146,7 @@ legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
 
-subplot(2,2,4);
+subplot(2, 2, 4);
 plot(t, v, t, vtrue, '--');
 title('v');
 xlabel('Time [s]');
