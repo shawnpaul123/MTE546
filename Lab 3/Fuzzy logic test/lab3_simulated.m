@@ -13,7 +13,7 @@ dt = 0.005;
 t = 0:dt:1;
 N = length(t);
 %rotate when i = a certain iteration number
-t_rot = 5;
+t_rot = 5;                                      % JIN: It. 5 seems way too early to start the rotation. We need some time for the EKF to converge first.
 % 'True' state vector
 X = zeros(4, N);
 % Velocity noise covariance
@@ -39,7 +39,7 @@ randn('seed', 0);
 w  = mvnrnd([0 0 0 0], stateNoise, N)';
 v1 = mvnrnd([0 0], senseNoise, N)';
 
-% Begin loop
+%% Begin loop
 X = zeros(4, N);
 Y = zeros(2, N);
 X(:, 1) = X0;
@@ -68,29 +68,29 @@ for i = 1:N - 1
     %stop rotation    
     if thetha > thetha_limit
             start_rot = false; 
-            thetha = 0;
-            disp('fin time');
-            disp(t(:,i));
+            thetha = 0;                     % JIN: This should not be necessary
+%             disp('fin time');
+%             disp(t(:,i));
     end
     
     %change velocity values to as needed
     if start_rot == true
-        disp('start time');
-        disp(t(:,i));
+%         disp('start time');
+%         disp(t(:,i));
         v,thetha = ang_rot(t(:,i),dt,thetha_limit,thetha);       
-        Xk(3) = Xk(3)+ v(1,1);
-        Xk(4) = Xk(4)+ v(2,1);       
+        Xk(3) = Xk(3)+ v(1,1);              % JIN: This doesn't seem mathematically correct. It should be either adding a *change* in velocity or assigning a value
+        Xk(4) = Xk(4)+ v(2,1);              % JIN: Ditto
         
     end 
     
     % Propagate state
-    Xk1 = [Xk(1) + dt*Xk(3); ...
+    Xk1 = [Xk(1) + dt*Xk(3); ...            % JIN: Not sure if this will play well with the rotation code while start_rot == true
            Xk(2) + dt*Xk(4); ...
            Xk(3); ...
            Xk(4)] + wk;
     
     % Calculate sensor response
-    Yk1 = h(Xk1(1), Xk1(2)) + v1k;
+    Yk1 = h(Xk1(1), Xk1(2)) + v1k;          % JIN: Why is sensor response being calculated twice?
     
     % Save state
     X(:, i+1) = Xk1;
@@ -142,8 +142,8 @@ M = [t; axSense; aySense]';
 writematrix(M, ['Simulation/' caseName '-sensordata.csv']);
 
 function [v,thetha] = ang_rot(t,dt,thetha_limit,thetha)
-radius = 0.5;%assume half of phone
-thetha = thetha + dt*ang_velocity(t);    
+radius = 0.5;%assume half of phone                  % JIN: Why is there a rotation radius at all? I thought the phone was supposed to move in a straight line
+thetha = thetha + dt*ang_velocity(t);
 r = rad_mat(radius,thetha);
 v = ang_velocity(t)*r;
        
@@ -151,10 +151,10 @@ end
 
 %returns angular vel
 function w = ang_velocity(t)
-w = -0.001*t^3 + 0.074*t^2 -1.508*t + 18.341;
+w = -0.001*t^3 + 0.074*t^2 -1.508*t + 18.341;       % JIN: Where did this come from?
 end
 
 %returns radius in i and j
 function r_mat = rad_mat(r,thetha)
-r_mat = r*[cos(thetha) sin(thetha)]';
+r_mat = r*[cos(thetha) sin(thetha)]';               % JIN: Same issue with radius of rotation
 end
