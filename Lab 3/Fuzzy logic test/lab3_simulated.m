@@ -1,5 +1,7 @@
 close all; clear all;
-
+%Updates:
+% qs posed answered and the 
+% 90 degree rotation can be seen
 
 
 % Case names: 
@@ -10,15 +12,14 @@ close all; clear all;
 
 %% Set up
 dt = 0.005;
-t = 0:dt:1;
+t = 0:dt:2;
 N = length(t);
 %rotate when i = a certain iteration number
-t_rot = 5;                                      % JIN: It. 5 seems way too early to start the rotation. We need some time for the EKF to converge first.
+t_rot = 200;
 % 'True' state vector
 X = zeros(4, N);
 % Velocity noise covariance
 stateNoise = 1e-4*eye(4);
-% stateNoise = 10*1e-4*eye(4);
 % Sensor noise covariance
 senseNoise = [0.21337 0; ...
               0       0.022288];
@@ -33,22 +34,22 @@ h = @(x, y) [(8.3741*x + 0.2395)./(x + 0.0123); ...
 %X state vector in terms of x,y,u,v
 %need velocity profile to go from u,v [1,0]->[0,1] at an
 %angular vel equal to lab 1
-X0 = [0 0 1 0]';
+%X0 = [0 0 1 0]';
+X0 = [0 0 16.8456 1.4274]';
 % Calculate noise
 randn('seed', 0);
 w  = mvnrnd([0 0 0 0], stateNoise, N)';
 v1 = mvnrnd([0 0], senseNoise, N)';
 
-%% Begin loop
+% Begin loop
 X = zeros(4, N);
 Y = zeros(2, N);
 X(:, 1) = X0;
 start_rot = false;
-v = [0 0]';
+vel_angular = [0 0]';
 thetha_limit = pi/2;
-hist_thetha = [0];%cat(2,hist_thetha,thetha);
-hist_v = [0 0]';%cat(2,hist_v,v);
 thetha = 0;
+rad = 1;
 
 for i = 1:N - 1
   
@@ -57,45 +58,50 @@ for i = 1:N - 1
     v1k = v1(:, i);
     
     % Calculate sensor response
+    % I don't see where else it is calculated
     Yk = h(Xk(1), Xk(2)) + v1k;
     
     if t_rot == i 
         start_rot = true;
         thetha = 0;
+        disp('start time');
+        disp(t(:,i));
     end
     %start rotation
     
     %stop rotation    
     if thetha > thetha_limit
-            start_rot = false; 
-            thetha = 0;                     % JIN: This should not be necessary
-%             disp('fin time');
-%             disp(t(:,i));
+            start_rot = false;             
+            
     end
     
     %change velocity values to as needed
     if start_rot == true
-%         disp('start time');
-%         disp(t(:,i));
-        v,thetha = ang_rot(t(:,i),dt,thetha_limit,thetha);       
-        Xk(3) = Xk(3)+ v(1,1);              % JIN: This doesn't seem mathematically correct. It should be either adding a *change* in velocity or assigning a value
-        Xk(4) = Xk(4)+ v(2,1);              % JIN: Ditto
+        
+        thetha = thetha_change(rad,dt,t(:,i),thetha);
+        vel_angular = vel_calc(t(:,i),rad,thetha);     
+        Xk(3) = vel_angular(1,1);
+        Xk(4) = vel_angular(2,1);       
         
     end 
     
     % Propagate state
-    Xk1 = [Xk(1) + dt*Xk(3); ...            % JIN: Not sure if this will play well with the rotation code while start_rot == true
+    % JIN: Not sure if this will play well with the rotation code while start_rot == true
+    % Shawn: the adding of noise or state propogation
+    Xk1 = [Xk(1) + dt*Xk(3); ...
            Xk(2) + dt*Xk(4); ...
            Xk(3); ...
            Xk(4)] + wk;
     
     % Calculate sensor response
-    Yk1 = h(Xk1(1), Xk1(2)) + v1k;          % JIN: Why is sensor response being calculated twice?
+    % SP: I dont see where else it is being calculated
+    Yk1 = h(Xk1(1), Xk1(2)) + v1k;
     
     % Save state
     X(:, i+1) = Xk1;
     Y(:, i+1) = Yk1;
 end
+% SP: Do you mean the below line can be removed?
 Y(:, end) = h(X(1, end), X(2, end)) + v1(:, end);
 
 x = X(1, :);
@@ -141,20 +147,27 @@ writematrix(M, ['Simulation/' caseName '-groundtruth.csv']);
 M = [t; axSense; aySense]';
 writematrix(M, ['Simulation/' caseName '-sensordata.csv']);
 
-function [v,thetha] = ang_rot(t,dt,thetha_limit,thetha)
-radius = 0.5;%assume half of phone                  % JIN: Why is there a rotation radius at all? I thought the phone was supposed to move in a straight line
-thetha = thetha + dt*ang_velocity(t);
-r = rad_mat(radius,thetha);
-v = ang_velocity(t)*r;
-       
+
+function thetha = thetha_change(radius,dt,t,thetha) 
+    thetha = thetha + dt*ang_velocity(t); 
+    r = rad_mat(radius,thetha);
+      
+    v =  ang_velocity(t)*r;    
 end
 
 %returns angular vel
+%SP: Gyro model from lab 1
 function w = ang_velocity(t)
-w = -0.001*t^3 + 0.074*t^2 -1.508*t + 18.341;       % JIN: Where did this come from?
+    w = -0.001*(t^3) + 0.074*(t^2) -1.508*t + 18.341;
 end
 
 %returns radius in i and j
 function r_mat = rad_mat(r,thetha)
-r_mat = r*[cos(thetha) sin(thetha)]';               % JIN: Same issue with radius of rotation
+    r_mat = r*[cos(thetha) sin(thetha)]';
+end
+
+%SP:Radius is basically from center of rotation to point of velocity
+function velocity = vel_calc(t,r,thetha)
+    radius = rad_mat(r,thetha);
+    velocity = ang_velocity(t)*radius; 
 end
