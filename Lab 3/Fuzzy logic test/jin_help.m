@@ -1,14 +1,7 @@
 
 close all; clear all;
 
-% thetha returns an array
-% instead of a value, am
-% curious if this a matlab quirk
-% thetha =
-% 
-%    -1.0103
-%     8.3924
-
+% useful for calculating starting velocities for system pre rotation
 v = [0 0]';
 thetha = 0;
 v,thetha = ang_rot(1,0.1,pi/2,0);
