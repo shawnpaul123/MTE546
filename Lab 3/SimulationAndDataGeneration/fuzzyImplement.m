@@ -9,10 +9,14 @@ file_sensor = 'Simulation\Baseline-SoftSensorThetha.csv';
 data = readmatrix(file_sensor);
 %read the sensor data
 t = data(:, 1);
+fs = 1/(t(2) - t(1));
 thetaIn = data(:, 2);
+
+% Low pass filter w/ passband frequency 10 Hz
+thetaIn = lowpass(thetaIn, 10, fs);
+
 N = length(thetaIn);
 thetaOut = zeros(size(thetaIn));
-
 
 for i = 1:N
     % Shawn this is the part you need to implement, along with tweaking
@@ -23,20 +27,23 @@ for i = 1:N
 end
 
 %% Plot results
-plot(thetaIn, thetaOut, thetaIn, thetaIn, '--');
-xlabel('Input angle [rad]');
-ylabel('Output angle [rad]');
-title('Fuzzy function response');
-legend('Output angle', 'Input angle');
+plot(t, ones(N, 1).*[0, pi/2], 'k--');
+hold on;
+plot(t, thetaIn, 'b', t, thetaOut, 'r');
+text(max(t)/2, 0 + 0.1, '0 rad');
+text(max(t)/2, pi/2 + 0.1, '\pi/2 rad');
+xlabel('Time [s]');
+ylabel('Angle [rad]');
+title('Soft decision for phone angle');
+legend('0 rad', '\pi/2 rad', 'Input angle', 'Output angle');
 grid minor;
 
 %% Define function
-thetaBars = [-pi/2, 0, pi/2, pi, 3*pi/2, 2*pi];
-delta = 5*pi/3;
+
 function outputAngle = fuzzyStercore(inputAngle)
     % Define fuzzy function parameters
     thetaBars = [-pi/2, 0, pi/2, pi, 3*pi/2, 2*pi];
-    delta = pi/3;
+    delta = 0.8;        % Probably best to keep this between 0.8 and 1
     
     % Define function array for membership functions
     membershipArr = [mu(thetaBars(1), delta, inputAngle); ...
