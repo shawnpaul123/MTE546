@@ -104,9 +104,10 @@ thetha_hist = thetha_hist(1,1:end-1);
 figure(1);
 plot(t, axSense, t, aySense);
 title('Sensor output');
-legend('ax', 'ay');
+legend('a_x', 'a_y');
 xlabel('Time [s]');
 ylabel('Acceleration [cm/s^2]');
+grid on;
 saveas(figure(1),'Plots/Sensor_output.fig');
 
 figure(2);
@@ -119,24 +120,24 @@ title('Ground truth');
 xlabel('Time [s]');
 ylabel('Position [cm]');
 legend('x', 'y', 'u', 'v');
+grid on;
 saveas(figure(2),'Plots/Ground_truth.fig');
 
 figure(3);
 plot(x, y);
 xlabel('Position x [cm]');
 ylabel('Position y [cm]');
-title('Position');
+title('True position');
+grid on;
 saveas(figure(3),'Plots/Position.fig');
 
 figure(4);
 plot(t,thetha_hist);
-xlabel('time(s)');
-ylabel('thetha value(radians)');
-title('Thetha History');
+xlabel('Time [s]');
+ylabel('Angle [rad]');
+title('True angle history');
+grid on;
 saveas(figure(4),'Plots/Thetha_History.fig');
-
-
-
 
 %% Write data files
 % Change this to change the file name

@@ -17,15 +17,16 @@ writematrix(M, ['Simulation/' caseName '-SoftSensorThetha.csv']);
 data2 = readmatrix(filename2);
 t2 = data2(:, 1);
 thetha_real = data2(:, 2);
-%plot graph of softsensor and real thetha
-%!plots
+
+%% plots
 figure(1);
 plot(t, thetha, t, thetha_real);
 xlabel('Time [s]');
-ylabel('Thetha vs Thetha Pred [rad]');
-title('Comparing Soft Sensor and Real Orientation');
-legend('Soft Sensor', 'Real Orientation');
+ylabel('Angle [rad]');
+title('Soft sensor vs. true orientation');
+legend('Soft sensor estimate $$\hat{\theta}$$', 'True orientation $$\theta$$', 'Interpreter', 'Latex');
 saveas(figure(1),'Plots/Soft_Sensor.fig');
+grid on;
 
 
 

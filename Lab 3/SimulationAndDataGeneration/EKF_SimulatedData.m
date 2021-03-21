@@ -127,7 +127,7 @@ subplot(2,2,3);
 plot(t, u, t, utrue, '--');
 title('u');
 xlabel('Time [s]');
-ylabel('x-velocity [cm]');
+ylabel('x-velocity [cm/s]');
 legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
@@ -136,7 +136,7 @@ subplot(2,2,4);
 plot(t, v, t, vtrue, '--');
 title('v');
 xlabel('Time [s]');
-ylabel('y-velocity [cm]');
+ylabel('y-velocity [cm/s]');
 legend('EKF prediction', 'Ground truth');
 grid on;
 grid minor;
@@ -150,7 +150,8 @@ if plotK
     title('Kalman gains');
     xlabel('Time [s]');
     ylabel('Gain');
-    legend('11', '21', '31', '41', '12', '22', '32', '42');
+    legend('K_{11}', 'K_{21}', 'K_{31}', 'K_{41}', ...
+        'K_{12}', 'K_{22}', 'K_{32}', 'K_{42}');
     grid on;
     grid minor;
     saveas(figure(2),'Plots/Kalman_Gain.fig');
@@ -164,13 +165,16 @@ if plotP
     maskUT = logical([1  1  1  1 ; 0  1  1  1 ; 0  0  1  1 ; 0  0  0  1 ]);
     PhistUT = Phist(:, maskUT);
     labelsUT = labels(maskUT);
+    for i = 1:length(labelsUT)
+        labelsUTstr(i) = {['P_{' num2str(labelsUT(i)) '}']};
+    end
     
     figure(3);
     plot(t, Phist);
     title('State uncertainty (P matrix)');
     xlabel('Time [s]');
     ylabel('Covariance');
-    legend(num2str(labelsUT));
+    legend(labelsUTstr);
     grid on;
     grid minor;
     saveas(figure(3),'Plots/P_matrix.fig');
