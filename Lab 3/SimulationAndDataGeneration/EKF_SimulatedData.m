@@ -142,7 +142,7 @@ grid on;
 grid minor;
 
 saveas(figure(1),'Plots/EKF_comparison_with_ground_truth.fig');
-
+%!plots
 % Kalman gains
 if plotK
     figure(2);

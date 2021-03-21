@@ -18,6 +18,7 @@ data2 = readmatrix(filename2);
 t2 = data2(:, 1);
 thetha_real = data2(:, 2);
 %plot graph of softsensor and real thetha
+%!plots
 figure(1);
 plot(t, thetha, t, thetha_real);
 xlabel('Time [s]');

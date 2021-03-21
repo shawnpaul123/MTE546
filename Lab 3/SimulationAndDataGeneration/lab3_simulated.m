@@ -30,8 +30,8 @@ h = @(x, y) [(8.3741*x + 0.2395)./(x + 0.0123); ...
 
 %% Simulate motion
 % Set velocity profile
-X0 = [0 0 3.8 2]';
-% X0 = [0 0 0 1]';
+%X0 = [0 0 3.8 2]';
+X0 = [0 0 3 0]';
 % X0 = [0 0 0 0]';
 
 % Calculate noise
@@ -46,7 +46,7 @@ X(:, 1) = X0;
 thetha = 0;
 thetha_limit = pi/2;
 
-delta_vel = abs(X0(4)-X0(3));
+delta_vel = sqrt(X0(4)^2+X0(3)^2);
 
 for i = 1:N - 1
     Xk = X(:, i);
@@ -57,10 +57,13 @@ for i = 1:N - 1
     Yk = h(Xk(1), Xk(2)) + v1k;
     thetha_hist(:,i) = thetha;
     if i*dt > rot_time && thetha < thetha_limit
+        delta_vel = sqrt(Xk(4)^2+Xk(3)^2);
         delta_thetha = ang_vel(dt);
         thetha = thetha + delta_thetha;
-        Xk(3) = delta_vel*cos(thetha) + delta_vel; 
-        Xk(4) = delta_vel*sin(thetha) + delta_vel;         
+        %Xk(3) = delta_vel*cos(thetha) + delta_vel; 
+        %Xk(4) = delta_vel*sin(thetha) + delta_vel; 
+        Xk(3) = delta_vel*cos(thetha); 
+        Xk(4) = delta_vel*sin(thetha);
      
     % Propagate state
         Xk1 = [Xk(1) + dt*Xk(3); ...
@@ -97,6 +100,7 @@ t = t(1,1:end-1);
 thetha_hist = thetha_hist(1,1:end-1);
 
 %% Plot simulated data
+%!plots
 figure(1);
 plot(t, axSense, t, aySense);
 title('Sensor output');
