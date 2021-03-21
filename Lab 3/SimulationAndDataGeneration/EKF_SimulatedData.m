@@ -16,21 +16,6 @@ scenario = 0;
 if scenario == 0 
     filename = 'Simulation/baseline-sensordata.csv'; 
     truefile = 'Simulation/baseline-groundtruth.csv';
-elseif scenario == 1
-    filename = 'Simulation/baseline-sensordata.csv'; 
-    truefile = 'Simulation/baseline-groundtruth.csv';
-elseif scenario == 2
-    filename = 'Simulation/10xSensNoise-sensordata.csv'; 
-    truefile = 'Simulation/10xSensNoise-groundtruth.csv';
-elseif scenario == 3
-    filename = 'Simulation/10xSystNoise-sensordata.csv'; 
-    truefile = 'Simulation/10xSystNoise-groundtruth.csv';
-elseif scenario == 4
-    filename = 'Simulation/yMotion-sensordata.csv'; 
-    truefile = 'Simulation/yMotion-groundtruth.csv';
-else
-    filename = 'Simulation/stationary-sensordata.csv'; 
-    truefile = 'Simulation/stationary-groundtruth.csv';
 end
     
 %need to have data in format of time,ax,ay
@@ -201,6 +186,16 @@ disp(['Err: ' num2str(ex) ' ' num2str(ey) ' ' ...
     num2str(eu) ' ' num2str(ev) ...
     ' M = ' num2str(em)]);
 %Err: 3.1616 6.2162 1.2739 1.9728 M = 3.1561
+
+
+
+
+%write function for soft sensor
+filename = 'Simulation\baseline-ekfdata.csv';
+X_ = X';
+M = [t X_(:,1) X_(:,2) X_(:,3) X_(:,4)];
+writematrix(M, filename);
+
 %% Define functions
 function Y = h(X)
     x = X(1);

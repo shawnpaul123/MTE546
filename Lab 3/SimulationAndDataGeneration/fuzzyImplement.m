@@ -1,9 +1,6 @@
 clear all; close all;
 
 %% Test
-% thetaIn = -pi:0.01:3*pi;
-% N = length(thetaIn);
-% thetaOut = zeros(size(thetaIn));
 % %read sensor data
 file_sensor = 'Simulation\Baseline-SoftSensorThetha.csv';
 data = readmatrix(file_sensor);
@@ -13,7 +10,7 @@ fs = 1/(t(2) - t(1));
 thetaIn = data(:, 2);
 
 % Low pass filter w/ passband frequency 10 Hz
-thetaIn = lowpass(thetaIn, 10, fs);
+%thetaIn = lowpass(thetaIn, 10, fs);
 
 N = length(thetaIn);
 thetaOut = zeros(size(thetaIn));
@@ -45,7 +42,7 @@ saveas(figure(1),'Plots/FuzzyOutput.fig');
 function outputAngle = fuzzyStercore(inputAngle)
     % Define fuzzy function parameters
     thetaBars = [-pi/2, 0, pi/2, pi, 3*pi/2, 2*pi];
-    delta = 0.8;        % Probably best to keep this between 0.8 and 1
+    delta = 0.1;        % Probably best to keep this between 0.8 and 1
     
     % Define function array for membership functions
     membershipArr = [mu(thetaBars(1), delta, inputAngle); ...
