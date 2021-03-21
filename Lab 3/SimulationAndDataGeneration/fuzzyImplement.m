@@ -27,6 +27,7 @@ for i = 1:N
 end
 
 %% Plot results
+figure(1);
 plot(t, ones(N, 1).*[0, pi/2], 'k--');
 hold on;
 plot(t, thetaIn, 'b', t, thetaOut, 'r');
@@ -37,6 +38,7 @@ ylabel('Angle [rad]');
 title('Soft decision for phone angle');
 legend('0 rad', '\pi/2 rad', 'Input angle', 'Output angle');
 grid minor;
+saveas(figure(1),'Plots/FuzzyOutput.fig');
 
 %% Define function
 

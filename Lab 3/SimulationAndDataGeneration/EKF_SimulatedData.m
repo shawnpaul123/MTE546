@@ -200,7 +200,7 @@ em = mean([ex ey eu ev]);
 disp(['Err: ' num2str(ex) ' ' num2str(ey) ' ' ...
     num2str(eu) ' ' num2str(ev) ...
     ' M = ' num2str(em)]);
-%Err: 5.6951 56.2324 0.41941 10.3059 M = 18.1632
+%Err: 3.1616 6.2162 1.2739 1.9728 M = 3.1561
 %% Define functions
 function Y = h(X)
     x = X(1);
