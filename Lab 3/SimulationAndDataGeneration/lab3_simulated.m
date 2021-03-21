@@ -30,7 +30,7 @@ h = @(x, y) [(8.3741*x + 0.2395)./(x + 0.0123); ...
 
 %% Simulate motion
 % Set velocity profile
-X0 = [0 0 3 0]';
+X0 = [0 0 3.8 2]';
 % X0 = [0 0 0 1]';
 % X0 = [0 0 0 0]';
 
@@ -61,16 +61,23 @@ for i = 1:N - 1
         thetha = thetha + delta_thetha;
         Xk(3) = delta_vel*cos(thetha) + delta_vel; 
         Xk(4) = delta_vel*sin(thetha) + delta_vel;         
-    else    
+     
     % Propagate state
         Xk1 = [Xk(1) + dt*Xk(3); ...
                Xk(2) + dt*Xk(4); ...
                Xk(3); ...
                Xk(4)] + wk;
+           
+    else
+    % Propagate state
+        Xk1 = [Xk(1) + dt*Xk(3); ...
+               Xk(2) + dt*Xk(4); ...
+               Xk(3); ...
+               Xk(4)] + wk;
+        
+        
        
     end
-    
-    
     % Calculate sensor response
     Yk1 = h(Xk1(1), Xk1(2)) + v1k;
     
